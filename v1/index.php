@@ -51,7 +51,42 @@ function authenticate(\Slim\Route $route) {
 /**
  *  Add our functions for the REST API here
  */
+/**
+ * User Registration
+ * url - /register
+ * method - POST
+ * params - name, email, password
+ */
+$app->post('/register', function() use ($app) {
+            // check for required params
+            verifyRequiredParams(array('name', 'email', 'password'));
 
+            $response = array();
+
+            // reading post params
+            $name = $app->request->post('name');
+            $email = $app->request->post('email');
+            $password = $app->request->post('password');
+
+            // validating email address
+            validateEmail($email);
+
+            $db = new DbHandler();
+            $res = $db->createUser($name, $email, $password);
+
+            if ($res == USER_CREATED_SUCCESSFULLY) {
+                $response["error"] = false;
+                $response["message"] = "You are successfully registered";
+            } else if ($res == USER_CREATE_FAILED) {
+                $response["error"] = true;
+                $response["message"] = "Oops! An error occurred while registereing";
+            } else if ($res == USER_ALREADY_EXISTED) {
+                $response["error"] = true;
+                $response["message"] = "Sorry, this email already existed";
+            }
+            // echo json response
+            echoRespnse(201, $response);
+        });
 
 
 /**
